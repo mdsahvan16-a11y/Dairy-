@@ -30,6 +30,7 @@ jobs:
         run: |
           unzip -q bharat_dairy_flutter_project.zip -d extracted
           test -d extracted/bharat_dairy
+          sed -i 's/intl: \^0.19.0/intl: ^0.20.3/' extracted/bharat_dairy/pubspec.yaml
 
       - name: Generate Android platform files
         working-directory: extracted/bharat_dairy

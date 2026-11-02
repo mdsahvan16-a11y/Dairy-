@@ -50,6 +50,7 @@ jobs:
           PROJECT_DIR=$(dirname "$PUBSPEC")
 
           if [ -f "BharatDairy_main_fixed.dart" ]; then
+            mkdir -p "$PROJECT_DIR/lib"
             cp BharatDairy_main_fixed.dart "$PROJECT_DIR/lib/main.dart"
           fi
 
@@ -57,18 +58,21 @@ jobs:
 
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
 
-      - name: Upgrade Gradle Wrapper
+      - name: Generate Android project files
         run: |
-          PUBSPEC=$(find extracted -name pubspec.yaml -print -quit)
-          PROJECT_DIR=$(dirname "$PUBSPEC")
+          cd "$PROJECT_DIR"
+          flutter create --platforms=android .
+
+      - name: Set Gradle version
+        run: |
           WRAPPER="$PROJECT_DIR/android/gradle/wrapper/gradle-wrapper.properties"
 
           if [ ! -f "$WRAPPER" ]; then
-            echo "Gradle wrapper file not found"
+            echo "Gradle wrapper was not generated"
             exit 1
           fi
 
-          sed -i 's#^distributionUrl=.*#distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.3-all.zip#' "$WRAPPER"
+          sed -i 's#^distributionUrl=.*#distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-all.zip#' "$WRAPPER"
 
           cat "$WRAPPER"
 

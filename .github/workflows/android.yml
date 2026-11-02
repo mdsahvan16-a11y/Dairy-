@@ -1,3 +1,4 @@
+
 name: Build Bharat Dairy APK
 
 on:
@@ -28,26 +29,48 @@ jobs:
       - name: Extract Flutter project
         run: |
           ZIP_FILE=$(find . -maxdepth 1 -type f -iname '*.zip' | head -n 1)
+
           if [ -z "$ZIP_FILE" ]; then
             echo "Project ZIP file not found"
             exit 1
           fi
+
           mkdir -p extracted
           unzip -q "$ZIP_FILE" -d extracted
 
       - name: Prepare project
         run: |
           PUBSPEC=$(find extracted -name pubspec.yaml -print -quit)
+
           if [ -z "$PUBSPEC" ]; then
             echo "pubspec.yaml not found"
             exit 1
           fi
+
           PROJECT_DIR=$(dirname "$PUBSPEC")
+
           if [ -f "BharatDairy_main_fixed.dart" ]; then
             cp BharatDairy_main_fixed.dart "$PROJECT_DIR/lib/main.dart"
           fi
+
           sed -i 's/intl: .*/intl: ^0.20.3/' "$PUBSPEC"
+
           echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+
+      - name: Upgrade Gradle Wrapper
+        run: |
+          PUBSPEC=$(find extracted -name pubspec.yaml -print -quit)
+          PROJECT_DIR=$(dirname "$PUBSPEC")
+          WRAPPER="$PROJECT_DIR/android/gradle/wrapper/gradle-wrapper.properties"
+
+          if [ ! -f "$WRAPPER" ]; then
+            echo "Gradle wrapper file not found"
+            exit 1
+          fi
+
+          sed -i 's#^distributionUrl=.*#distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.3-all.zip#' "$WRAPPER"
+
+          cat "$WRAPPER"
 
       - name: Build APK
         run: |
